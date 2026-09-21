@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>09.22 Our Date</title>
+<style>
+:root{
+  --ink:#233243;
+  --muted:#6f7d8d;
+  --paper:#fffdf9;
+  --blue:#5e8fab;
+  --pink:#da9dad;
+  --navy:#172334;
+  --sky-progress:0;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic","Noto Sans JP",sans-serif;
+  color:var(--ink);
+  background:#eef4f7;
+  overflow-x:hidden;
+}
+button,a{font:inherit}
+.hidden{display:none!important}
+
+/* ---------- DAY / NIGHT BACKDROP ---------- */
+.sky{
+  position:fixed; inset:0; z-index:-10; overflow:hidden;
+  background:
+    linear-gradient(
+      to bottom,
+      hsl(calc(204 - var(--sky-progress)*18) 60% calc(92% - var(--sky-progress)*62%)),
+      hsl(calc(37 + var(--sky-progress)*190) 80% calc(88% - var(--sky-progress)*62%))
+    );
+  transition:background .15s linear;
+}
+.sun,.moon{
+  position:absolute;
+  width:82px;height:82px;border-radius:50%;
+  left:50%;
+  transform:translateX(-50%);
+  transition:opacity .1s linear;
+}
+.sun{
+  top:calc(70% - var(--sky-progress)*58%);
+  background:#ffd977;
+  box-shadow:0 0 55px rgba(255,214,109,.55);
+  opacity:calc(1 - var(--sky-progress)*1.25);
+}
+.moon{
+  top:calc(80% - var(--sky-progress)*64%);
+  background:#f5f2df;
+  box-shadow:0 0 40px rgba(233,238,255,.35);
+  opacity:calc((var(--sky-progress) - .55)*2.2);
+}
+.stars{
+  position:absolute; inset:0; opacity:calc((var(--sky-progress) - .55)*2);
+  background-image:
+    radial-gradient(circle at 12% 18%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 28% 8%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 43% 22%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 63% 12%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 78% 26%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 88% 10%,#fff 0 1px,transparent 2px);
+  background-size:220px 170px;
+}
+.sea-haze{
+  position:absolute;left:-10%;right:-10%;bottom:-5%;height:35%;
+  background:
+    radial-gradient(ellipse at center,rgba(255,255,255,.45),transparent 55%),
+    linear-gradient(to bottom,rgba(85,151,184,.28),rgba(38,88,117,.5));
+  border-radius:50% 50% 0 0;
+}
+
+/* ---------- GENERAL ---------- */
+.screen{
+  min-height:100vh;
+  padding:max(22px,env(safe-area-inset-top)) 16px max(32px,env(safe-area-inset-bottom));
+  display:flex;justify-content:center;
+}
+.panel{width:100%;max-width:430px}
+.glass{
+  background:rgba(255,255,255,.86);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.76);
+  box-shadow:0 22px 65px rgba(25,48,70,.10);
+}
+.badge{
+  display:inline-flex;padding:8px 12px;border-radius:999px;
+  background:rgba(94,143,171,.10);color:var(--blue);
+  font-size:11px;font-weight:800;letter-spacing:.12em;
+}
+.primary{
+  width:100%;border:0;border-radius:999px;padding:17px 18px;
+  background:linear-gradient(135deg,#5e8fab,#8eb4c8);
+  color:white;font-weight:800;font-size:16px;
+  box-shadow:0 12px 30px rgba(75,127,157,.25);
+}
+
+/* ---------- START ---------- */
+.start-card{
+  margin-top:5vh;border-radius:30px;padding:34px 22px 28px;text-align:center;
+}
+.start-card h1{
+  font-size:clamp(29px,8vw,38px);line-height:1.25;margin:18px 0 14px;letter-spacing:-.03em;
+}
+.start-card p{font-size:14px;line-height:1.9;color:var(--muted);margin:0 auto 28px}
+
+/* ---------- QUESTIONS ---------- */
+.question-card{margin-top:2vh;border-radius:30px;padding:20px 16px 22px}
+.progress-label{text-align:center;font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.1em}
+.progress{height:7px;background:rgba(35,50,67,.08);border-radius:99px;margin-top:8px;overflow:hidden}
+.progress i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--pink),var(--blue));transition:width .3s}
+.q-wrap{text-align:center;padding:34px 4px 8px}
+.q-no{font-size:11px;font-weight:800;color:var(--blue);letter-spacing:.13em}
+.q-title{
+  margin:13px auto 0;max-width:100%;
+  font-size:clamp(21px,6.2vw,29px);line-height:1.48;font-weight:850;
+  white-space:normal;overflow-wrap:anywhere;word-break:normal;
+}
+.q-sub{min-height:54px;margin-top:14px;color:var(--muted);font-size:13px;line-height:1.75}
+.arena{height:190px;position:relative;margin-top:6px}
+.answer{
+  position:absolute;width:45%;min-width:112px;padding:15px 9px;border:0;border-radius:999px;
+  color:#fff;font-size:14px;font-weight:800;box-shadow:0 10px 24px rgba(35,50,67,.12);
+}
+.answer.yes{left:0;bottom:4px;background:linear-gradient(135deg,#5e8fab,#84adc3)}
+.answer.no{right:0;bottom:4px;background:linear-gradient(135deg,#d989a2,#ebafbd)}
+.reaction{min-height:28px;text-align:center;color:var(--blue);font-size:13px;font-weight:750}
+
+/* ---------- TRANSITION ---------- */
+.result-card{margin-top:10vh;border-radius:30px;padding:38px 22px;text-align:center}
+.result-card h2{font-size:29px;margin:16px 0 14px}
+.result-card p{font-size:14px;line-height:1.95;color:var(--muted)}
+
+/* ---------- GUIDE ---------- */
+#guideScreen{padding:0}
+.guide{width:100%;max-width:480px;margin:auto}
+.hero{
+  min-height:100vh;padding:60px 22px 45px;
+  display:flex;flex-direction:column;justify-content:center;text-align:center;
+}
+.hero .date{font-size:11px;letter-spacing:.25em;color:var(--blue);font-weight:900}
+.hero h1{font-size:clamp(48px,15vw,68px);line-height:.92;margin:20px 0 18px;letter-spacing:-.065em}
+.hero .lead{font-size:16px;line-height:2;color:#536373}
+.hero .note{
+  margin-top:30px;padding:22px 18px;border-radius:24px;background:rgba(255,255,255,.66);
+  text-align:left;line-height:1.95;font-size:14px;box-shadow:0 16px 45px rgba(30,52,70,.07)
+}
+.hero .scroll{margin-top:30px;font-size:11px;letter-spacing:.16em;font-weight:900;color:var(--blue)}
+
+.timeline-head{text-align:center;padding:48px 20px 22px}
+.timeline-head h2{font-size:29px;margin:12px 0}
+.timeline-head p{font-size:13px;line-height:1.85;color:var(--muted);margin:0}
+
+/* ---------- ROUTE DIVIDERS ---------- */
+.travel{
+  margin:10px 16px 22px;
+  padding:15px 14px;border-radius:20px;
+  background:rgba(255,255,255,.55);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.7);
+}
+.travel-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:800;color:#5f7080}
+.track{
+  margin-top:12px;height:4px;border-radius:999px;background:rgba(45,69,88,.15);position:relative;
+}
+.vehicle{
+  position:absolute;top:50%;left:0;transform:translate(-10%,-58%);
+  font-size:28px;filter:drop-shadow(0 3px 5px rgba(0,0,0,.12));
+}
+.travel.play .vehicle{animation:drive 2.7s ease-in-out forwards}
+@keyframes drive{from{left:0}to{left:94%}}
+
+/* ---------- EVENT CARDS ---------- */
+.event{margin:0 16px 28px}
+.time{font-size:28px;font-weight:900;color:#456f89;margin:0 0 9px 4px}
+.card{
+  position:relative;overflow:hidden;border-radius:28px;
+  background:rgba(255,255,255,.89);backdrop-filter:blur(12px);
+  box-shadow:0 20px 55px rgba(31,54,72,.10);
+}
+.visual{
+  height:150px;position:relative;overflow:hidden;
+  display:flex;align-items:flex-end;padding:18px;color:white;
+}
+.visual.drive{
+  background:
+    radial-gradient(circle at 70% 25%,rgba(255,226,134,.95) 0 8%,transparent 9%),
+    linear-gradient(to bottom,#97c6df 0 54%,#70a8c6 55% 70%,#4d7890 71% 100%);
+}
+.visual.lunch{
+  background:
+    linear-gradient(to bottom,rgba(0,0,0,.06),rgba(0,0,0,.35)),
+    radial-gradient(circle at 70% 20%,#f5d795 0 8%,transparent 9%),
+    linear-gradient(to bottom,#9ed0e6 0 55%,#4a8cad 56% 100%);
+}
+.visual.animal{
+  background:
+    radial-gradient(circle at 75% 20%,#ffd978 0 9%,transparent 10%),
+    linear-gradient(to bottom,#9cd1e1 0 60%,#7db267 61% 100%);
+}
+.visual.return{
+  background:linear-gradient(to bottom,#f1b391,#c56f75 55%,#435b72 56% 100%);
+}
+.visual.night{
+  background:
+    radial-gradient(circle at 75% 20%,#f3f0dd 0 8%,transparent 9%),
+    linear-gradient(to bottom,#263a56,#142132);
+}
+.visual .scene-icon{font-size:54px}
+.visual .scene-title{margin-left:auto;text-align:right;font-size:12px;font-weight:900;letter-spacing:.12em;text-shadow:0 2px 10px rgba(0,0,0,.25)}
+
+.body{padding:22px 20px 24px}
+.kicker{font-size:11px;font-weight:900;color:var(--blue);letter-spacing:.14em}
+.title{font-size:26px;line-height:1.35;margin:8px 0 13px;font-weight:900;letter-spacing:-.025em}
+.copy{font-size:14px;line-height:1.95;color:#5d6c79}
+.copy strong{color:var(--ink)}
+.reserved{display:inline-flex;margin-top:15px;padding:8px 11px;border-radius:999px;background:rgba(94,143,171,.1);color:var(--blue);font-size:11px;font-weight:900}
+.maplink{
+  display:inline-flex;align-items:center;gap:7px;margin-top:12px;padding:10px 12px;border-radius:14px;
+  background:#f3f6f8;color:#355b74;text-decoration:none;font-size:12px;font-weight:800;
+}
+
+/* ---------- SCRATCH ONLY IMPORTANT TEXT ---------- */
+.secret-wrap{
+  display:inline-block;position:relative;vertical-align:middle;
+  padding:0 2px;margin:0 1px;
+}
+.secret-text{font-weight:900;color:var(--ink)}
+.scratch-mini{
+  position:absolute;inset:-5px -7px;z-index:3;
+  touch-action:none;border-radius:9px;
+}
+.scratch-label{
+  position:absolute;inset:-5px -7px;z-index:4;
+  display:flex;align-items:center;justify-content:center;
+  color:#fff;font-size:10px;font-weight:900;letter-spacing:.08em;
+  pointer-events:none;text-shadow:0 1px 5px rgba(0,0,0,.25)
+}
+
+/* ---------- NIGHT / END ---------- */
+.night-zone{padding-top:30px;background:linear-gradient(to bottom,transparent,rgba(13,24,39,.52) 18%,rgba(13,24,39,.86))}
+.night-zone .time{color:#d0e0eb}
+.end{
+  min-height:92vh;padding:72px 25px;display:flex;flex-direction:column;justify-content:center;
+  text-align:center;color:white;background:linear-gradient(to bottom,rgba(20,32,47,.55),rgba(15,24,36,.9));
+}
+.end small{letter-spacing:.2em;font-weight:900;color:#b8c8d7}
+.end h2{font-size:clamp(30px,9vw,43px);line-height:1.45;margin:24px 0}
+.end p{font-size:15px;line-height:2.05;color:#d6e1e9;margin:0 auto;max-width:320px}
+.end .final{font-size:19px;font-weight:900;margin-top:34px}
+
+@media(max-width:360px){
+  .question-card{padding-left:13px;padding-right:13px}
+  .q-title{font-size:20px}
+  .answer{font-size:13px;min-width:105px}
+  .title{font-size:23px}
+}
+</style>
+</head>
+<body>
+
+<div class="sky" aria-hidden="true">
+  <div class="stars"></div><div class="sun"></div><div class="moon"></div><div class="sea-haze"></div>
+</div>
+
+<section id="start" class="screen">
+  <div class="panel">
+    <div class="start-card glass">
+      <span class="badge">PRIVATE INVITATION</span>
+      <h1>デート前に、<br>7つだけ確認があります。</h1>
+      <p>
+        難しく考えず、直感で答えてください。<br>
+        ただし、回答画面には<br>
+        少しだけ不具合があります。笑
+      </p>
+      <button id="startBtn" class="primary">回答をはじめる</button>
+    </div>
+  </div>
+</section>
+
+<section id="questions" class="screen hidden">
+  <div class="panel">
+    <div class="question-card glass">
+      <div id="progressLabel" class="progress-label"></div>
+      <div class="progress"><i id="progressFill"></i></div>
+      <div class="q-wrap">
+        <div id="qNo" class="q-no"></div>
+        <h2 id="qTitle" class="q-title"></h2>
+        <div id="qSub" class="q-sub"></div>
+      </div>
+      <div id="arena" class="arena">
+        <button id="yes" class="answer yes"></button>
+        <button id="no" class="answer no"></button>
+      </div>
+      <div id="reaction" class="reaction"></div>
+    </div>
+  </div>
+</section>
+
+<section id="result" class="screen hidden">
+  <div class="panel">
+    <div class="result-card glass">
+      <span class="badge">COMPLETE</span>
+      <h2>回答を受け付けました。</h2>
+      <p>
+        ご協力ありがとうございました。<br><br>
+        なお、NOボタンは仕様上かなり自由に動きます。笑<br><br>
+        ここから先は、<strong>9/22のデートしおり。</strong><br>
+        予定の大事なところだけ、スクラッチで開けてください。
+      </p>
+    </div>
+  </div>
+</section>
+
+<section id="guide" class="hidden">
+  <main class="guide">
+    <section class="hero">
+      <div class="date">SEPTEMBER 22, 2026</div>
+      <h1>OUR<br>DATE</h1>
+      <div class="lead">
+        海を見たい。<br>
+        動物にも会いたい。<br>
+        いっぱい話したい。
+      </div>
+      <div class="note">
+        ということで、全部まとめて一日にしました。<br><br>
+        朝は無理せず11時スタート。<br>
+        昼は海、午後は動物、夜はお酒。<br><br>
+        時間だけ先に見えて、<strong>肝心なところはスクラッチ式。</strong><br>
+        少しずつ開けてください。
+      </div>
+      <div class="scroll">SCROLL TO START ↓</div>
+    </section>
+
+    <section class="timeline-head">
+      <span class="badge">TODAY'S SCHEDULE</span>
+      <h2>09.22 / TUE</h2>
+      <p>朝から夜まで、時間順に並んでいます。</p>
+    </section>
+
+    <div class="event">
+      <div class="time">11:00</div>
+      <article class="card">
+        <div class="visual drive"><div class="scene-icon">🚗</div><div class="scene-title">MEET & DRIVE</div></div>
+        <div class="body">
+          <div class="kicker">START</div>
+          <div class="title">ご自宅付近までお迎え</div>
+          <div class="copy">
+            早起きがプレッシャーにならないように、スタートは11時。<br><br>
+            合流したら、そのまま海の方へドライブ。渋滞しても、話す時間が増えるので問題なし。笑
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="travel">
+      <div class="travel-top"><span>ご自宅付近</span><span>横須賀・長井</span></div>
+      <div class="track"><span class="vehicle">🚗</span></div>
+    </div>
+
+    <div class="event">
+      <div class="time">13:00</div>
+      <article class="card">
+        <div class="visual lunch"><div class="scene-icon">🌊</div><div class="scene-title">SEA SIDE LUNCH</div></div>
+        <div class="body">
+          <div class="kicker">LUNCH</div>
+          <div class="title">
+            海を見ながら
+            <span class="secret-wrap">
+              <span class="secret-text">WATERFRONT DINING SANGA</span>
+              <canvas class="scratch-mini"></canvas>
+              <span class="scratch-label">SCRATCH</span>
+            </span>
+          </div>
+          <div class="copy">
+            「海見たいなぁ〜」をちゃんと反映。<br><br>
+            景色を見ながらゆっくりランチ。食後、天気がよければ海沿いも少し歩く予定です。<br><br>
+            「見るだけでいい派」なので、海には入りません。笑
+          </div>
+          <div class="reserved">✓ RESERVED　13:00 / 2 PEOPLE</div><br>
+          <a class="maplink" target="_blank" rel="noopener"
+             href="https://www.google.com/maps/search/?api=1&query=WATERFRONT%20DINING%20SANGA">
+            📍 Google Mapsで見る
+          </a>
+        </div>
+      </article>
+    </div>
+
+    <div class="travel">
+      <div class="travel-top"><span>SANGA</span><span>次の目的地</span></div>
+      <div class="track"><span class="vehicle">🚗</span></div>
+    </div>
+
+    <div class="event">
+      <div class="time">14:30頃</div>
+      <article class="card">
+        <div class="visual animal"><div class="scene-icon">🐾</div><div class="scene-title">ANIMAL TIME</div></div>
+        <div class="body">
+          <div class="kicker">AFTERNOON</div>
+          <div class="title">
+            次は
+            <span class="secret-wrap">
+              <span class="secret-text">ソレイユの丘</span>
+              <canvas class="scratch-mini"></canvas>
+              <span class="scratch-label">SCRATCH</span>
+            </span>
+          </div>
+          <div class="copy">
+            最初はサモエドカフェの予定だったけど、せっかくドライブするので予定変更。<br><br>
+            カピバラ、アルパカ、カンガルーなど、いろいろな動物に会いに行きます。<br><br>
+            ※サモエドはいません。隣にいる人がたまにサモエドになります🐶
+          </div>
+          <a class="maplink" target="_blank" rel="noopener"
+             href="https://www.google.com/maps/search/?api=1&query=%E9%95%B7%E4%BA%95%E6%B5%B7%E3%81%AE%E6%89%8B%E5%85%AC%E5%9C%92%20%E3%82%BD%E3%83%AC%E3%82%A4%E3%83%A6%E3%81%AE%E4%B8%98">
+            📍 Google Mapsで見る
+          </a>
+        </div>
+      </article>
+    </div>
+
+    <div class="travel">
+      <div class="travel-top"><span>ソレイユの丘</span><span>レンタカー返却</span></div>
+      <div class="track"><span class="vehicle">🚗</span></div>
+    </div>
+
+    <div class="event">
+      <div class="time">16:00頃</div>
+      <article class="card">
+        <div class="visual return"><div class="scene-icon">🔑</div><div class="scene-title">RETURN & TRANSFER</div></div>
+        <div class="body">
+          <div class="kicker">RETURN</div>
+          <div class="title">レンタカー返却 → 電車へ</div>
+          <div class="copy">
+            動物を満喫したら、夕方前に横須賀を出発。<br><br>
+            借りた店舗まで車を戻して返却。その後は電車に乗り換えて池袋へ向かいます。<br><br>
+            ここからは運転がなくなるので、夜は一緒に飲めます。笑
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <div class="travel">
+      <div class="travel-top"><span>レンタカー返却</span><span>池袋</span></div>
+      <div class="track"><span class="vehicle">🚃</span></div>
+    </div>
+
+    <section class="night-zone">
+      <div class="event">
+        <div class="time">19:15</div>
+        <article class="card">
+          <div class="visual night"><div class="scene-icon">🍷</div><div class="scene-title">DINNER</div></div>
+          <div class="body">
+            <div class="kicker">NIGHT</div>
+            <div class="title">
+              夜ごはんは
+              <span class="secret-wrap">
+                <span class="secret-text">隠れ房 池袋店</span>
+                <canvas class="scratch-mini"></canvas>
+                <span class="scratch-label">SCRATCH</span>
+              </span>
+            </div>
+            <div class="copy">
+              夜は少し雰囲気を変えて、落ち着いたお店へ。<br><br>
+              ドライブ中は一緒に飲めないので、夜は無理しない程度に少し酔えたら嬉しいです。笑
+            </div>
+            <div class="reserved">✓ RESERVED　19:15 / 2 PEOPLE</div><br>
+            <a class="maplink" target="_blank" rel="noopener"
+               href="https://www.google.com/maps/search/?api=1&query=%E9%9A%A0%E3%82%8C%E6%88%BF%20%E6%B1%A0%E8%A2%8B%E5%BA%97">
+              📍 Google Mapsで見る
+            </a>
+          </div>
+        </article>
+      </div>
+
+      <div class="event">
+        <div class="time">AFTER 21:00</div>
+        <article class="card">
+          <div class="visual night"><div class="scene-icon">🌙</div><div class="scene-title">SECRET ROUTE</div></div>
+          <div class="body">
+            <div class="kicker">BONUS STAGE</div>
+            <div class="title">この先は、まだ未定。</div>
+            <div class="copy">
+              もう少し飲むのか、どこかでゆっくり話すのか、それともここで解散するのか。<br><br>
+              ここだけは予定を決めすぎず、その時の気分で。<br><br>
+              「まだ一緒にいたい」が一致した場合のみ、追加デートモードが解放されます。笑
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="end">
+      <small>ONE MORE THING</small>
+      <h2>一番の目的は、<br>予定を全部こなすことじゃない。</h2>
+      <p>
+        いっぱい話して、いっぱい笑って、<br>
+        前回より少しだけ仲良くなれたら十分。<br><br>
+        そして寒くなった頃には、<br>
+        次はちゃんと<strong>泊まりの温泉デート</strong>へ。
+      </p>
+      <div class="final">9/22、楽しみにしてます。</div>
+    </section>
+  </main>
+</section>
+
+<script>
+const qs = [
+  {t:"9/22、デートしてくれますか？",s:"ここはYES以外を想定していません。",y:"もちろん！",n:"ちょっと考える",r:"ありがとうございます。第一関門突破です。"},
+  {t:"ちょっとは好きですか？",s:"「ちょっとは」なので難易度低めです。",y:"好きです☺️",n:"まだ秘密",r:"その回答は大切に保存しておきます。"},
+  {t:"デートでは、いっぱい甘えてくれますか？",s:"無理のない範囲でお願いします。",y:"がんばります",n:"様子見で笑",r:"ほどほどに期待しておきます。"},
+  {t:"たくさんくっついてくれますか？",s:"前回より少し近くなれたら嬉しいです。",y:"少しなら…",n:"慣れてから！",r:"「少しなら」を正式に受理しました。"},
+  {t:"今度、泊まりで温泉デートも行ってくれますか？♨️",s:"寒くなってきた頃に行けたら最高です。",y:"寒くなったらね",n:"まだ早いです笑",r:"冬の楽しみとして登録しました。"},
+  {t:"デートのあと、ちょっと帰したくなくなっても怒らないですか？笑",s:"もちろん、場合によってはOK？くらいの意味です。",y:"場合によります😗",n:"帰ります笑",r:"「場合による」という可能性だけ大切にします。"},
+  {t:"結婚するまで一緒にいてくれますか？",s:"最後なので急にスケールを大きくしました。",y:"それは気が早い笑",n:"重い重い笑",r:"最後までご回答ありがとうございました。笑"}
+];
+
+const $=id=>document.getElementById(id);
+let idx=0;
+function show(id){
+  ["start","questions","result","guide"].forEach(x=>$(x).classList.add("hidden"));
+  $(id).classList.remove("hidden");
+  scrollTo({top:0,behavior:"instant"});
+}
+function resetNo(){
+  const b=$("no"); b.style.left=""; b.style.top=""; b.style.right="0"; b.style.bottom="4px";
+}
+function render(){
+  let q=qs[idx];
+  $("progressLabel").textContent=`QUESTION ${idx+1} / ${qs.length}`;
+  $("progressFill").style.width=`${idx/qs.length*100}%`;
+  $("qNo").textContent=`QUESTION ${String(idx+1).padStart(2,"0")}`;
+  $("qTitle").textContent=q.t;$("qSub").textContent=q.s;$("yes").textContent=q.y;$("no").textContent=q.n;
+  $("reaction").textContent="";resetNo();
+}
+$("startBtn").onclick=()=>{idx=0;render();show("questions")};
+$("yes").onclick=()=>{
+  $("reaction").textContent=qs[idx].r;
+  setTimeout(()=>{
+    idx++;
+    if(idx>=qs.length){
+      $("progressFill").style.width="100%";show("result");
+      setTimeout(()=>{show("guide");initScratches();initTravel();updateSky()},1600);
+    }else render();
+  },650)
+};
+function runNo(e){
+  e?.preventDefault(); e?.stopPropagation();
+  const a=$("arena").getBoundingClientRect(), b=$("no");
+  const x=Math.random()*Math.max(0,a.width-b.offsetWidth);
+  const y=Math.random()*Math.max(0,a.height-b.offsetHeight);
+  b.style.left=x+"px";b.style.top=y+"px";b.style.right="auto";b.style.bottom="auto";
+  const lines=["あれ？押せませんね。","その回答はメンテナンス中です。","YESの方が押しやすそうです。","また逃げました。笑"];
+  $("reaction").textContent=lines[Math.floor(Math.random()*lines.length)];
+}
+$("no").addEventListener("pointerdown",runNo);
+$("no").addEventListener("mouseenter",e=>{if(matchMedia("(hover:hover)").matches)runNo(e)});
+
+/* mini scratch: small surface, slower reveal */
+let scratchReady=false;
+function initScratches(){
+  if(scratchReady)return;scratchReady=true;
+  document.querySelectorAll(".scratch-mini").forEach(setupMini);
+}
+function setupMini(c){
+  const wrap=c.parentElement,label=wrap.querySelector(".scratch-label"),ctx=c.getContext("2d");
+  let drawing=false,checks=0;
+  function size(){
+    const r=wrap.getBoundingClientRect(),d=devicePixelRatio||1;
+    c.width=r.width*d;c.height=r.height*d;c.style.width=r.width+"px";c.style.height=r.height+"px";
+    ctx.setTransform(d,0,0,d,0,0);
+    const g=ctx.createLinearGradient(0,0,r.width,r.height);
+    g.addColorStop(0,"#8797a5");g.addColorStop(.5,"#bdc7ce");g.addColorStop(1,"#758794");
+    ctx.globalCompositeOperation="source-over";ctx.fillStyle=g;ctx.fillRect(0,0,r.width,r.height);
+    ctx.globalCompositeOperation="destination-out";
+  }
+  size();
+  function point(e){const r=c.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+  function erase(e){
+    if(!drawing)return;
+    const p=point(e);ctx.beginPath();ctx.arc(p.x,p.y,12,0,Math.PI*2);ctx.fill();
+    checks++;
+    if(checks%12===0){
+      const data=ctx.getImageData(0,0,c.width,c.height).data;
+      let clear=0,total=data.length/4;
+      for(let i=3;i<data.length;i+=4) if(data[i]<30) clear++;
+      if(clear/total>.48){
+        c.style.transition="opacity .45s";label.style.transition="opacity .3s";
+        c.style.opacity="0";label.style.opacity="0";
+        setTimeout(()=>{c.style.display="none";label.style.display="none"},480);
+      }
+    }
+  }
+  c.addEventListener("pointerdown",e=>{drawing=true;c.setPointerCapture?.(e.pointerId);erase(e)});
+  c.addEventListener("pointermove",erase);
+  ["pointerup","pointercancel","pointerleave"].forEach(ev=>c.addEventListener(ev,()=>drawing=false));
+}
+
+/* moving car/train only when each route enters view */
+function initTravel(){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting)e.target.classList.add("play")}),{threshold:.45});
+  document.querySelectorAll(".travel").forEach(x=>io.observe(x));
+}
+
+/* sunrise -> sunset -> moon */
+function updateSky(){
+  if($("guide").classList.contains("hidden"))return;
+  const max=document.documentElement.scrollHeight-innerHeight;
+  const p=max>0?Math.min(1,scrollY/max):0;
+  document.documentElement.style.setProperty("--sky-progress",p.toFixed(3));
+}
+addEventListener("scroll",updateSky,{passive:true});
+addEventListener("resize",updateSky);
+show("start");
+</script>
+</body>
+</html>
